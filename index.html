@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SQL Keys & Constraints — A Complete Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f1923;
+      --paper: #f6f4ef;
+      --cream: #edeae0;
+      --accent: #1a6b4a;
+      --accent2: #c75e1a;
+      --muted: #667;
+      --border: #ccc8b8;
+      --code-bg: #0d1117;
+      --code-text: #e6edf3;
+      --highlight: #fef9ec;
+      --tag-pk:   #d4edda;
+      --tag-fk:   #cfe2ff;
+      --tag-uq:   #e2d9f3;
+      --tag-nn:   #fff3cd;
+      --tag-ck:   #f8d7da;
+      --tag-df:   #d1f0e8;
+      --tag-idx:  #fce5cd;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background-color: var(--paper);
+      color: var(--ink);
+      line-height: 1.78;
+      font-size: 17px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--ink);
+      color: #fff;
+      padding: 56px 44px 46px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,107,74,.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+    }
+    header .breadcrumb {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #8a9;
+      margin-bottom: 16px;
+    }
+    header h1 {
+      font-family: Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: normal;
+      letter-spacing: -.02em;
+      line-height: 1.12;
+    }
+    header h1 span { color: #7edcb0; }
+    header .subtitle {
+      margin-top: 14px;
+      font-size: 1.04rem;
+      color: #b0bec5;
+      max-width: 640px;
+      font-style: italic;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    /* ── SIDEBAR ── */
+    aside {
+      padding: 36px 22px;
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-family: 'Courier New', monospace;
+    }
+    aside nav a {
+      display: block;
+      text-decoration: none;
+      color: var(--ink);
+      padding: 7px 11px;
+      border-radius: 5px;
+      font-size: .91rem;
+      font-family: Georgia, serif;
+      border-left: 3px solid transparent;
+      transition: all .18s;
+      margin-bottom: 2px;
+    }
+    aside nav a:hover { background: var(--cream); border-left-color: var(--accent); color: var(--accent); }
+    aside nav a.active { background: var(--cream); border-left-color: var(--accent); color: var(--accent); font-style: italic; }
+    .key-badge {
+      display: inline-block;
+      font-size: .62rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 5px;
+      font-family: 'Courier New', monospace;
+      font-style: normal;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-weight: bold;
+    }
+
+    /* ── MAIN ── */
+    main { padding: 46px 54px 90px; max-width: 830px; }
+
+    /* ── INTRO CARD ── */
+    .intro-box {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 24px 28px;
+      margin-bottom: 50px;
+    }
+    .intro-box p { font-size: 1.04rem; margin-bottom: 10px; }
+    .intro-box p:last-child { margin-bottom: 0; }
+
+    /* ── TYPES GRID ── */
+    .types-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 56px;
+    }
+    .type-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 16px;
+      background: #fff;
+      cursor: pointer;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .type-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .type-card .tc-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .type-card .tc-name { font-size: .93rem; font-weight: bold; font-family: Georgia, serif; margin-bottom: 4px; }
+    .type-card .tc-desc { font-size: .8rem; color: var(--muted); font-family: 'Courier New', monospace; line-height: 1.5; }
+
+    /* ── SECTION ── */
+    .section { margin-bottom: 68px; padding-top: 8px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-num { font-family: 'Courier New', monospace; font-size: 1rem; color: #aab; }
+    .section h2 { font-family: Georgia, serif; font-size: 1.65rem; font-weight: normal; }
+    .badge {
+      font-size: .7rem; padding: 3px 10px; border-radius: 20px;
+      font-family: 'Courier New', monospace; letter-spacing: .04em;
+      text-transform: uppercase; font-weight: 700;
+    }
+
+    p { margin-bottom: 14px; }
+    .lead { font-size: 1.07rem; font-style: italic; color: #445; margin-bottom: 20px; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      background: var(--highlight);
+      border-left: 4px solid #e8a030;
+      padding: 14px 18px;
+      border-radius: 0 6px 6px 0;
+      margin: 20px 0;
+      font-size: .94rem;
+    }
+    .callout strong { color: #7a4a00; }
+
+    /* ── INSIGHT BOX ── */
+    .insight-box {
+      background: #edfaf4;
+      border: 1px solid #a8dfc4;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 16px 0 0;
+      font-size: .92rem;
+      font-family: Georgia, serif;
+      line-height: 1.65;
+    }
+    .insight-box .insight-title {
+      font-weight: bold;
+      color: var(--accent);
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      margin-bottom: 7px;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── ERROR BOX ── */
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #f5c6cb;
+      border-left: 4px solid #c0392b;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: .92rem;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+    .error-box .err-title { font-weight: bold; color: #c0392b; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; font-family: 'Courier New', monospace; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 20px 24px;
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .87rem;
+      overflow-x: auto;
+      margin: 18px 0 24px;
+      line-height: 1.65;
+    }
+    code { font-family: 'Courier New', Courier, monospace; background: #e8e5de; padding: 1px 5px; border-radius: 3px; font-size: .88em; }
+    pre code { background: none; padding: 0; font-size: inherit; }
+    .kw  { color: #79c0ff; }
+    .kw2 { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .nm  { color: #f0c674; }
+    .cn  { color: #79c0ff; font-weight: bold; }
+
+    /* ── STEPS ── */
+    .steps { margin: 22px 0; }
+    .step { display: flex; gap: 16px; margin-bottom: 11px; align-items: flex-start; }
+    .step-n {
+      background: var(--accent);
+      color: #fff;
+      min-width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .76rem; font-family: 'Courier New', monospace;
+      font-weight: bold; margin-top: 4px; flex-shrink: 0;
+    }
+    .step p { margin: 0; }
+
+    /* ── TRACE BLOCK ── */
+    .trace-block {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin: 20px 0;
+    }
+    .trace-block .trace-title {
+      font-family: 'Courier New', monospace;
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-weight: bold;
+    }
+    .trace-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: .85rem;
+      background: var(--cream);
+    }
+    .tr-val   { padding: 2px 9px; border-radius: 4px; font-weight: bold; min-width: 36px; text-align: center; }
+    .tr-pk    { background: #d4edda; color: #155724; }
+    .tr-fk    { background: #cfe2ff; color: #084298; }
+    .tr-bad   { background: #f8d7da; color: #842029; }
+    .tr-ok    { background: #d4edda; color: #155724; }
+    .tr-null  { background: #f8d7da; color: #842029; font-style: italic; }
+    .tr-arrow { color: #aab; font-size: 1rem; }
+    .tr-result { margin-left: auto; font-size: .77rem; font-family: Georgia, serif; color: var(--muted); }
+    .trace-row.pass  { background: #d4edda22; }
+    .trace-row.fail  { background: #f8d7da22; }
+    .trace-row.warn  { background: #fff3cd44; }
+
+    /* ── TABLES ── */
+    .tables-row { display: flex; gap: 20px; flex-wrap: wrap; margin: 18px 0; }
+    .tbl-wrap { flex: 1; min-width: 130px; }
+    .tbl-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-family: 'Courier New', monospace; margin-bottom: 6px; }
+    table { border-collapse: collapse; font-family: 'Courier New', monospace; font-size: .87rem; background: #fff; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; width: 100%; }
+    th { background: var(--ink); color: #fff; padding: 7px 16px; text-align: center; }
+    td { padding: 6px 16px; text-align: center; border-top: 1px solid var(--border); }
+    tr:nth-child(even) td { background: var(--cream); }
+    td.bad-val  { color: #c0392b; font-weight: bold; }
+    td.good-val { color: #1a6b4a; font-weight: bold; }
+    td.null-val { color: #c0392b; font-style: italic; font-weight: bold; }
+    td.pk-val   { background: #d4edda; color: #155724; font-weight: bold; }
+    td.fk-val   { background: #cfe2ff; color: #084298; }
+
+    .output-table { margin-top: 0; }
+    .output-label { font-size: .78rem; font-family: 'Courier New', monospace; font-weight: bold; color: var(--accent2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .08em; }
+
+    /* ── SUB HEADING ── */
+    .sub-h3 {
+      font-family: Georgia, serif;
+      font-size: 1.04rem;
+      margin: 28px 0 12px;
+      color: var(--ink);
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+    }
+
+    /* ── DIVIDER ── */
+    hr.fancy { border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 52px 0; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--ink); color: #7a8; text-align: center; padding: 28px; font-size: .84rem; font-family: 'Courier New', monospace; }
+    footer strong { color: #7edcb0; }
+
+    @media (max-width: 768px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      main { padding: 28px 20px 60px; }
+      .types-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">Database Concepts › SQL › Keys &amp; Constraints</div>
+  <h1>SQL <span>Keys &amp; Constraints</span></h1>
+  <p class="subtitle">The rules that keep your data honest — explained step by step with examples, violations, and real syntax.</p>
+</header>
+
+<div class="page-wrap">
+  <aside>
+    <h2>Contents</h2>
+    <nav id="toc">
+      <a href="#intro">Introduction</a>
+      <a href="#types">All Types</a>
+      <a href="#pk">PRIMARY KEY <span class="key-badge" style="background:#d4edda;color:#155724">PK</span></a>
+      <a href="#fk">FOREIGN KEY <span class="key-badge" style="background:#cfe2ff;color:#084298">FK</span></a>
+      <a href="#uq">UNIQUE <span class="key-badge" style="background:#e2d9f3;color:#432874">UQ</span></a>
+      <a href="#nn">NOT NULL <span class="key-badge" style="background:#fff3cd;color:#7a4a00">NN</span></a>
+      <a href="#ck">CHECK <span class="key-badge" style="background:#f8d7da;color:#842029">CK</span></a>
+      <a href="#df">DEFAULT <span class="key-badge" style="background:#d1f0e8;color:#0a5c45">DF</span></a>
+      <a href="#idx">INDEX <span class="key-badge" style="background:#fce5cd;color:#7a3c00">IX</span></a>
+      <a href="#summary">Quick Summary</a>
+    </nav>
+  </aside>
+
+  <main>
+
+    <!-- INTRO -->
+    <section class="section" id="intro">
+      <div class="intro-box">
+        <p>In SQL, <strong>keys</strong> identify rows uniquely and link tables together. <strong>Constraints</strong> are rules that enforce the integrity of your data — they prevent invalid, duplicate, or missing values from ever entering the database.</p>
+        <p>Together, keys and constraints are the backbone of a well-structured relational database. Without them, data becomes inconsistent, unreliable, and hard to query correctly.</p>
+      </div>
+      <div class="callout">
+        <strong>Why this matters:</strong> A database without constraints is like a spreadsheet with no validation. Anyone can enter duplicate IDs, blank required fields, or references to rows that don't exist. Constraints make the database itself enforce correctness — not just your application code.
+      </div>
+    </section>
+
+    <!-- TYPES -->
+    <section class="section" id="types">
+      <div class="section-header">
+        <span class="section-num">00</span>
+        <h2>Types of Keys &amp; Constraints</h2>
+      </div>
+      <div class="types-grid">
+        <div class="type-card" onclick="document.getElementById('pk').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">🔑</div>
+          <div class="tc-name">PRIMARY KEY</div>
+          <div class="tc-desc">Uniquely identifies each row</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('fk').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">🔗</div>
+          <div class="tc-name">FOREIGN KEY</div>
+          <div class="tc-desc">Links rows across tables</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('uq').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">✨</div>
+          <div class="tc-name">UNIQUE</div>
+          <div class="tc-desc">No duplicate values allowed</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('nn').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">🚫</div>
+          <div class="tc-name">NOT NULL</div>
+          <div class="tc-desc">Value must always be provided</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('ck').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">✅</div>
+          <div class="tc-name">CHECK</div>
+          <div class="tc-desc">Value must pass a condition</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('df').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">📋</div>
+          <div class="tc-name">DEFAULT</div>
+          <div class="tc-desc">Fills in a value automatically</div>
+        </div>
+        <div class="type-card" onclick="document.getElementById('idx').scrollIntoView({behavior:'smooth'})">
+          <div class="tc-icon">⚡</div>
+          <div class="tc-name">INDEX</div>
+          <div class="tc-desc">Speeds up search queries</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="fancy"/>
+
+    <!-- PRIMARY KEY -->
+    <section class="section" id="pk">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2>PRIMARY KEY</h2>
+        <span class="badge" style="background:var(--tag-pk);color:#155724">Unique + Not Null</span>
+      </div>
+      <p class="lead">A PRIMARY KEY <strong>uniquely identifies every row</strong> in a table. No two rows can share the same primary key value, and it can never be NULL.</p>
+      <p>Every table should have exactly one primary key. It can be a single column (simple key) or a combination of columns (composite key). The database automatically creates an index on the primary key for fast lookups.</p>
+
+      <pre><span class="cm">-- Single-column primary key</span>
+<span class="kw">CREATE TABLE</span> students (
+    student_id  <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
+    name        <span class="kw">VARCHAR</span>(<span class="nm">100</span>) <span class="cn">NOT NULL</span>,
+    email       <span class="kw">VARCHAR</span>(<span class="nm">150</span>)
+);
+
+<span class="cm">-- Composite primary key (defined at table level)</span>
+<span class="kw">CREATE TABLE</span> enrollments (
+    student_id  <span class="kw">INT</span>,
+    course_id   <span class="kw">INT</span>,
+    enrolled_on <span class="kw">DATE</span>,
+    <span class="cn">PRIMARY KEY</span> (student_id, course_id)
+);</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>You declare one column (or a combination) as the PRIMARY KEY.</p></div>
+        <div class="step"><div class="step-n">2</div><p>On every INSERT or UPDATE, the database checks: is this value already used? Is it NULL?</p></div>
+        <div class="step"><div class="step-n">3</div><p>If either check fails → the operation is rejected with an error.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If both pass → the row is accepted and stored.</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on the students table</h3>
+      <div class="tables-row">
+        <div class="tbl-wrap">
+          <div class="tbl-label">Existing Data</div>
+          <table>
+            <tr><th>student_id</th><th>name</th></tr>
+            <tr><td class="pk-val">1</td><td>Alice</td></tr>
+            <tr><td class="pk-val">2</td><td>Bob</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="trace-block">
+        <div class="trace-title">New INSERT attempts — Primary Key: student_id</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-pk">id=3</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT student_id = 3</span>
+          <span class="tr-result">✅ Unique &amp; not null → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">id=1</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT student_id = 1</span>
+          <span class="tr-result">❌ Duplicate value → REJECTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-null">NULL</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT student_id = NULL</span>
+          <span class="tr-result">❌ NULL not allowed → REJECTED</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        <code>student_id = 3</code> is brand new and not NULL → inserted successfully.<br>
+        <code>student_id = 1</code> already exists → database rejects it with a <em>duplicate key</em> error.<br>
+        <code>student_id = NULL</code> violates the not-null rule → rejected immediately.<br>
+        This guarantees every row has a unique, stable identity you can always refer to.
+      </div>
+      <div class="error-box">
+        <div class="err-title">❌ Error Examples</div>
+        <code>ERROR: duplicate key value violates unique constraint "students_pkey"</code><br>
+        <code>ERROR: null value in column "student_id" violates not-null constraint</code>
+      </div>
+    </section>
+
+    <!-- FOREIGN KEY -->
+    <section class="section" id="fk">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2>FOREIGN KEY</h2>
+        <span class="badge" style="background:var(--tag-fk);color:#084298">Referential Integrity</span>
+      </div>
+      <p class="lead">A FOREIGN KEY <strong>links a column in one table to the PRIMARY KEY of another</strong>. It ensures you can't reference a row that doesn't exist.</p>
+      <p>Foreign keys enforce <em>referential integrity</em> — the guarantee that every relationship in your database points to something real. You can't add an order for a customer who doesn't exist, and you can't delete a customer who still has orders (unless you use CASCADE).</p>
+
+      <pre><span class="kw">CREATE TABLE</span> orders (
+    order_id    <span class="kw">INT</span>  <span class="cn">PRIMARY KEY</span>,
+    customer_id <span class="kw">INT</span>,
+    amount      <span class="kw">DECIMAL</span>(<span class="nm">10</span>,<span class="nm">2</span>),
+    <span class="cn">FOREIGN KEY</span> (customer_id) <span class="kw">REFERENCES</span> customers(customer_id)
+);
+
+<span class="cm">-- With cascade options</span>
+<span class="cn">FOREIGN KEY</span> (customer_id)
+    <span class="kw">REFERENCES</span> customers(customer_id)
+    <span class="kw">ON DELETE CASCADE</span>    <span class="cm">-- delete orders when customer is deleted</span>
+    <span class="kw">ON UPDATE CASCADE</span>;   <span class="cm">-- update orders if customer_id changes</span></pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>You declare a column as a FOREIGN KEY referencing another table's primary key.</p></div>
+        <div class="step"><div class="step-n">2</div><p>On every INSERT or UPDATE in the child table, the database checks: does this value exist in the parent table?</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the value doesn't exist in the parent → the operation is rejected.</p></div>
+        <div class="step"><div class="step-n">4</div><p>On DELETE/UPDATE of the parent row, the ON DELETE/ON UPDATE rule determines what happens to children.</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on orders table</h3>
+      <div class="tables-row">
+        <div class="tbl-wrap">
+          <div class="tbl-label">customers (parent)</div>
+          <table>
+            <tr><th>customer_id</th><th>name</th></tr>
+            <tr><td class="pk-val">101</td><td>Alice</td></tr>
+            <tr><td class="pk-val">102</td><td>Bob</td></tr>
+          </table>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-label">orders (child)</div>
+          <table>
+            <tr><th>order_id</th><th>customer_id</th></tr>
+            <tr><td>1</td><td class="fk-val">101</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="trace-block">
+        <div class="trace-title">New INSERT attempts into orders — FK: customer_id → customers(customer_id)</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-fk">cid=102</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT order with customer_id = 102</span>
+          <span class="tr-result">✅ Exists in customers → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">cid=999</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT order with customer_id = 999</span>
+          <span class="tr-result">❌ Not in customers → REJECTED</span>
+        </div>
+        <div class="trace-row warn">
+          <span class="tr-val tr-null">NULL</span>
+          <span class="tr-arrow">→</span>
+          <span>INSERT order with customer_id = NULL</span>
+          <span class="tr-result">⚠️ Allowed (unless NOT NULL also set)</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        <code>customer_id = 102</code> exists in the customers table → order inserted successfully.<br>
+        <code>customer_id = 999</code> has no matching row in customers → database rejects it. This prevents "orphan" orders that point to nobody.<br>
+        NULL is allowed by default unless you also add NOT NULL — it means "order with no customer assigned yet".
+      </div>
+
+      <h3 class="sub-h3">CASCADE options explained</h3>
+      <div class="trace-block">
+        <div class="trace-title">What happens to child rows when parent row is deleted</div>
+        <div class="trace-row"><span style="min-width:160px;font-weight:bold;">ON DELETE CASCADE</span><span class="tr-arrow">→</span><span>Child rows are automatically deleted too</span></div>
+        <div class="trace-row"><span style="min-width:160px;font-weight:bold;">ON DELETE SET NULL</span><span class="tr-arrow">→</span><span>FK column set to NULL in child rows</span></div>
+        <div class="trace-row"><span style="min-width:160px;font-weight:bold;">ON DELETE RESTRICT</span><span class="tr-arrow">→</span><span>Parent delete is blocked if children exist (default)</span></div>
+        <div class="trace-row"><span style="min-width:160px;font-weight:bold;">ON DELETE NO ACTION</span><span class="tr-arrow">→</span><span>Like RESTRICT but checked at end of transaction</span></div>
+      </div>
+    </section>
+
+    <!-- UNIQUE -->
+    <section class="section" id="uq">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2>UNIQUE</h2>
+        <span class="badge" style="background:var(--tag-uq);color:#432874">No Duplicates</span>
+      </div>
+      <p class="lead">A UNIQUE constraint ensures <strong>no two rows have the same value</strong> in the specified column(s). Unlike PRIMARY KEY, a UNIQUE column can hold NULL.</p>
+      <p>Use UNIQUE for columns that are natural identifiers but not the primary key — like email addresses, usernames, or phone numbers. A table can have multiple UNIQUE constraints but only one PRIMARY KEY.</p>
+
+      <pre><span class="kw">CREATE TABLE</span> users (
+    user_id  <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
+    email    <span class="kw">VARCHAR</span>(<span class="nm">200</span>) <span class="cn">UNIQUE</span>,        <span class="cm">-- inline</span>
+    username <span class="kw">VARCHAR</span>(<span class="nm">50</span>),
+    phone    <span class="kw">VARCHAR</span>(<span class="nm">20</span>),
+    <span class="cn">UNIQUE</span> (username),                   <span class="cm">-- table level</span>
+    <span class="cn">UNIQUE</span> (phone)
+);</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>On INSERT or UPDATE, the database scans existing values in the UNIQUE column.</p></div>
+        <div class="step"><div class="step-n">2</div><p>If the new value already exists → operation is rejected.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the value is NULL → it passes (most databases allow multiple NULLs in a UNIQUE column).</p></div>
+        <div class="step"><div class="step-n">4</div><p>If the value is brand new → row is inserted/updated successfully.</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on users table</h3>
+      <div class="tables-row">
+        <div class="tbl-wrap">
+          <div class="tbl-label">Existing Data</div>
+          <table>
+            <tr><th>user_id</th><th>email</th><th>username</th></tr>
+            <tr><td class="pk-val">1</td><td>alice@x.com</td><td>alice</td></tr>
+            <tr><td class="pk-val">2</td><td>bob@x.com</td><td>bob</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="trace-block">
+        <div class="trace-title">New INSERT attempts — UNIQUE constraints on email and username</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">email</span>
+          <span class="tr-arrow">→</span>
+          <span>carol@x.com (new email)</span>
+          <span class="tr-result">✅ Not duplicate → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">email</span>
+          <span class="tr-arrow">→</span>
+          <span>alice@x.com (already exists)</span>
+          <span class="tr-result">❌ Duplicate → REJECTED</span>
+        </div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-null">NULL</span>
+          <span class="tr-arrow">→</span>
+          <span>email = NULL</span>
+          <span class="tr-result">✅ NULL allowed in UNIQUE → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">user</span>
+          <span class="tr-arrow">→</span>
+          <span>username = "alice" (already exists)</span>
+          <span class="tr-result">❌ Duplicate username → REJECTED</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        New unique values pass freely. Duplicate non-null values are always rejected.<br>
+        NULL is a special case — it represents "unknown", so most databases treat multiple NULLs as <em>not equal</em> to each other, allowing several rows to have NULL in a UNIQUE column.<br>
+        <strong>Difference from PRIMARY KEY:</strong> UNIQUE allows NULL; PRIMARY KEY does not. A table can have many UNIQUE constraints, but only one PRIMARY KEY.
+      </div>
+    </section>
+
+    <!-- NOT NULL -->
+    <section class="section" id="nn">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2>NOT NULL</h2>
+        <span class="badge" style="background:var(--tag-nn);color:#7a4a00">Value Required</span>
+      </div>
+      <p class="lead">NOT NULL ensures a column <strong>always has a value</strong> — it can never be left empty (NULL). It is the simplest and most common constraint.</p>
+      <p>By default, every column in SQL accepts NULL unless you explicitly add NOT NULL. Use it for fields that must always be present: names, dates, status codes, prices, and so on.</p>
+
+      <pre><span class="kw">CREATE TABLE</span> products (
+    product_id   <span class="kw">INT</span>           <span class="cn">PRIMARY KEY</span>,
+    product_name <span class="kw">VARCHAR</span>(<span class="nm">200</span>)  <span class="cn">NOT NULL</span>,   <span class="cm">-- must be provided</span>
+    price        <span class="kw">DECIMAL</span>(<span class="nm">8</span>,<span class="nm">2</span>)  <span class="cn">NOT NULL</span>,   <span class="cm">-- must be provided</span>
+    description  <span class="kw">TEXT</span>                        <span class="cm">-- nullable (optional)</span>
+);</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>When a row is inserted or updated, the database checks every NOT NULL column.</p></div>
+        <div class="step"><div class="step-n">2</div><p>If a NOT NULL column has no value supplied (or explicitly NULL) → rejected immediately.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If all NOT NULL columns have values → row proceeds to other constraint checks.</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on products table</h3>
+      <div class="trace-block">
+        <div class="trace-title">NOT NULL columns: product_name, price</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">✓</span>
+          <span>INSERT (1, "Laptop", 999.99, "Fast laptop")</span>
+          <span class="tr-result">✅ All NOT NULL fields present → ACCEPTED</span>
+        </div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">✓</span>
+          <span>INSERT (2, "Mouse", 29.99, NULL)</span>
+          <span class="tr-result">✅ description is nullable → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">✗</span>
+          <span>INSERT (3, NULL, 49.99, "Keyboard")</span>
+          <span class="tr-result">❌ product_name is NULL → REJECTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">✗</span>
+          <span>INSERT (4, "Monitor", NULL, NULL)</span>
+          <span class="tr-result">❌ price is NULL → REJECTED</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        Row 1: every required field has a value → accepted.<br>
+        Row 2: <code>description</code> is NULL but it's nullable (no NOT NULL constraint) → fine.<br>
+        Row 3: <code>product_name</code> was not provided → rejected. A product with no name makes no sense.<br>
+        Row 4: <code>price</code> is NULL → rejected. A product must always have a price.<br>
+        The <code>description</code> column has no NOT NULL, so it's optional — perfectly valid to leave it blank.
+      </div>
+    </section>
+
+    <!-- CHECK -->
+    <section class="section" id="ck">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2>CHECK</h2>
+        <span class="badge" style="background:var(--tag-ck);color:#842029">Custom Condition</span>
+      </div>
+      <p class="lead">A CHECK constraint lets you define a <strong>custom rule that every row must satisfy</strong>. If the condition evaluates to false, the row is rejected.</p>
+      <p>CHECK is the most flexible constraint — you can write any valid SQL expression. Common uses: ensuring age is positive, salary is above minimum, or status is one of a fixed set of values.</p>
+
+      <pre><span class="kw">CREATE TABLE</span> employees (
+    emp_id   <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
+    name     <span class="kw">VARCHAR</span>(<span class="nm">100</span>) <span class="cn">NOT NULL</span>,
+    age      <span class="kw">INT</span>          <span class="cn">CHECK</span> (age &gt;= <span class="nm">18</span> <span class="kw">AND</span> age &lt;= <span class="nm">65</span>),
+    salary   <span class="kw">DECIMAL</span>(<span class="nm">10</span>,<span class="nm">2</span>) <span class="cn">CHECK</span> (salary &gt; <span class="nm">0</span>),
+    status   <span class="kw">VARCHAR</span>(<span class="nm">20</span>)  <span class="cn">CHECK</span> (status <span class="kw">IN</span> (<span class="st">'active'</span>, <span class="st">'inactive'</span>, <span class="st">'on_leave'</span>))
+);</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>On INSERT or UPDATE, the database evaluates the CHECK expression with the new column value.</p></div>
+        <div class="step"><div class="step-n">2</div><p>If the expression returns TRUE → row is accepted (passes this constraint).</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the expression returns FALSE → row is rejected with an error.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If the expression returns NULL (e.g., column is NULL) → row is accepted (NULL is not FALSE).</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on employees table</h3>
+      <div class="trace-block">
+        <div class="trace-title">CHECK constraints: age (18–65), salary (&gt;0), status (active/inactive/on_leave)</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">✓</span>
+          <span>age=30, salary=50000, status='active'</span>
+          <span class="tr-result">✅ All checks pass → ACCEPTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">age</span>
+          <span class="tr-arrow">→</span>
+          <span>age = 15 (fails age &gt;= 18)</span>
+          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">salary</span>
+          <span class="tr-arrow">→</span>
+          <span>salary = -500 (fails salary &gt; 0)</span>
+          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+        </div>
+        <div class="trace-row fail">
+          <span class="tr-val tr-bad">status</span>
+          <span class="tr-arrow">→</span>
+          <span>status = 'fired' (not in allowed list)</span>
+          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+        </div>
+        <div class="trace-row warn">
+          <span class="tr-val tr-null">NULL</span>
+          <span class="tr-arrow">→</span>
+          <span>age = NULL</span>
+          <span class="tr-result">⚠️ NULL skips CHECK (not FALSE) → ACCEPTED</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        Row 1: all three conditions evaluate TRUE → inserted.<br>
+        <code>age = 15</code>: the expression <code>15 &gt;= 18</code> is FALSE → rejected.<br>
+        <code>salary = -500</code>: the expression <code>-500 &gt; 0</code> is FALSE → rejected.<br>
+        <code>status = 'fired'</code>: not in the IN list → FALSE → rejected.<br>
+        <strong>NULL edge case:</strong> When the column is NULL, CHECK evaluates to NULL (not FALSE), so the row passes. To also block NULLs, combine CHECK with NOT NULL.
+      </div>
+    </section>
+
+    <!-- DEFAULT -->
+    <section class="section" id="df">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2>DEFAULT</h2>
+        <span class="badge" style="background:var(--tag-df);color:#0a5c45">Auto-fill Value</span>
+      </div>
+      <p class="lead">DEFAULT <strong>automatically fills in a value</strong> when no value is provided during INSERT. It doesn't restrict — it helps.</p>
+      <p>DEFAULT is the only constraint that adds data rather than rejecting it. It's great for timestamps (created_at), boolean flags (is_active), counters, or any field with a sensible starting value.</p>
+
+      <pre><span class="kw">CREATE TABLE</span> orders (
+    order_id    <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
+    customer_id <span class="kw">INT</span>          <span class="cn">NOT NULL</span>,
+    status      <span class="kw">VARCHAR</span>(<span class="nm">20</span>)  <span class="cn">DEFAULT</span> <span class="st">'pending'</span>,
+    created_at  <span class="kw">TIMESTAMP</span>    <span class="cn">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
+    quantity    <span class="kw">INT</span>          <span class="cn">DEFAULT</span> <span class="nm">1</span>,
+    is_paid     <span class="kw">BOOLEAN</span>      <span class="cn">DEFAULT</span> <span class="kw">FALSE</span>
+);</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>On INSERT, the database checks each DEFAULT column: was a value provided?</p></div>
+        <div class="step"><div class="step-n">2</div><p>If yes → use the provided value.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If no (column omitted from INSERT) → substitute the DEFAULT value automatically.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If NULL is explicitly inserted → NULL is used (overrides DEFAULT).</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — INSERT attempts on orders table</h3>
+      <div class="trace-block">
+        <div class="trace-title">DEFAULT columns: status='pending', quantity=1, is_paid=FALSE</div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">full</span>
+          <span>INSERT (1, 101, 'shipped', NOW(), 3, TRUE)</span>
+          <span class="tr-result">✅ All values provided → used as-is</span>
+        </div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">part</span>
+          <span>INSERT (2, 101) — omit status, qty, is_paid</span>
+          <span class="tr-result">✅ Defaults fill in: 'pending', 1, FALSE</span>
+        </div>
+        <div class="trace-row warn">
+          <span class="tr-val tr-null">NULL</span>
+          <span>INSERT (3, 101, NULL, ...)</span>
+          <span class="tr-result">⚠️ Explicit NULL overrides DEFAULT → status = NULL</span>
+        </div>
+      </div>
+      <div class="tables-row">
+        <div class="tbl-wrap output-table">
+          <div class="output-label">✅ Resulting stored data</div>
+          <table>
+            <tr><th>order_id</th><th>customer_id</th><th>status</th><th>quantity</th><th>is_paid</th></tr>
+            <tr><td class="pk-val">1</td><td>101</td><td class="good-val">shipped</td><td>3</td><td class="good-val">TRUE</td></tr>
+            <tr><td class="pk-val">2</td><td>101</td><td>pending</td><td>1</td><td>FALSE</td></tr>
+            <tr><td class="pk-val">3</td><td>101</td><td class="null-val">NULL</td><td>1</td><td>FALSE</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        Row 1: all values given explicitly → nothing substituted.<br>
+        Row 2: only <code>order_id</code> and <code>customer_id</code> provided → <code>status</code>, <code>quantity</code>, <code>is_paid</code> are auto-filled from DEFAULT.<br>
+        Row 3: <code>status = NULL</code> was explicitly written → DEFAULT is <em>not</em> applied. NULL overrides DEFAULT. To prevent this, also add NOT NULL to the column.
+      </div>
+    </section>
+
+    <!-- INDEX -->
+    <section class="section" id="idx">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2>INDEX</h2>
+        <span class="badge" style="background:var(--tag-idx);color:#7a3c00">Performance Booster</span>
+      </div>
+      <p class="lead">An INDEX is a <strong>lookup structure that speeds up queries</strong> on a column. It doesn't restrict data — it makes finding it faster.</p>
+      <p>Without an index, the database must scan every row (a <em>full table scan</em>) to find matching values. An index works like a book's index — you jump straight to the right page instead of reading every page. The trade-off: indexes use storage and slow down INSERT/UPDATE slightly.</p>
+
+      <pre><span class="cm">-- Create a regular index</span>
+<span class="kw">CREATE INDEX</span> idx_orders_customer
+<span class="kw">ON</span> orders (customer_id);
+
+<span class="cm">-- Create a unique index (same effect as UNIQUE constraint)</span>
+<span class="kw">CREATE UNIQUE INDEX</span> idx_users_email
+<span class="kw">ON</span> users (email);
+
+<span class="cm">-- Composite index (for queries that filter on both columns)</span>
+<span class="kw">CREATE INDEX</span> idx_orders_customer_date
+<span class="kw">ON</span> orders (customer_id, order_date);
+
+<span class="cm">-- Drop an index</span>
+<span class="kw">DROP INDEX</span> idx_orders_customer;</pre>
+
+      <h3 class="sub-h3">How it works — step by step</h3>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><p>When you create an index, the database builds a sorted B-tree structure of the column's values, each pointing to the actual row location.</p></div>
+        <div class="step"><div class="step-n">2</div><p>When a query filters or sorts by that column, the database uses the index to locate matching rows instantly instead of scanning the whole table.</p></div>
+        <div class="step"><div class="step-n">3</div><p>On INSERT/UPDATE/DELETE, the index is automatically updated to stay in sync.</p></div>
+      </div>
+
+      <h3 class="sub-h3">Worked Trace — query performance with vs without index</h3>
+      <div class="trace-block">
+        <div class="trace-title">Table: orders (1,000,000 rows) — query: WHERE customer_id = 102</div>
+        <div class="trace-row fail" style="background:#fff0f022">
+          <span class="tr-val tr-bad">slow</span>
+          <span><strong>Without index</strong> — full table scan</span>
+          <span class="tr-result">Reads all 1,000,000 rows → ~800ms</span>
+        </div>
+        <div class="trace-row pass">
+          <span class="tr-val tr-ok">fast</span>
+          <span><strong>With index</strong> on customer_id — B-tree lookup</span>
+          <span class="tr-result">Reads ~20 rows directly → ~1ms</span>
+        </div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📖 What this means</div>
+        Without an index, finding all orders for <code>customer_id = 102</code> requires checking every single row. With an index, the database jumps directly to the matching rows using a sorted B-tree structure.<br><br>
+        <strong>When to add an index:</strong> columns used frequently in WHERE, JOIN ON, or ORDER BY clauses.<br>
+        <strong>When NOT to:</strong> small tables (full scan is fast anyway), columns with very few distinct values, or tables with very frequent INSERT/UPDATE (index maintenance overhead).
+      </div>
+
+      <div class="callout">
+        <strong>Note:</strong> PRIMARY KEY and UNIQUE constraints automatically create an index behind the scenes. You don't need to create one manually for those columns.
+      </div>
+    </section>
+
+    <hr class="fancy"/>
+
+    <!-- SUMMARY -->
+    <section class="section" id="summary">
+      <div class="section-header">
+        <span class="section-num">—</span>
+        <h2>Quick Reference Summary</h2>
+      </div>
+      <p>All seven keys &amp; constraints at a glance:</p>
+      <div style="overflow-x:auto;margin-top:20px;">
+        <table style="width:100%;min-width:580px;font-family:Georgia,serif;font-size:.91rem;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:10px 14px;">Constraint</th>
+              <th style="padding:10px 14px;">Allows NULL?</th>
+              <th style="padding:10px 14px;">Allows Duplicates?</th>
+              <th style="padding:10px 14px;">Rejects Data?</th>
+              <th style="padding:10px 14px;">Per Table</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:9px 14px;font-weight:bold;">PRIMARY KEY</td><td style="text-align:center">No</td><td style="text-align:center">No</td><td style="text-align:center">Yes</td><td style="text-align:center">Only 1</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">FOREIGN KEY</td><td style="text-align:center">Yes*</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes</td><td style="text-align:center">Many</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">UNIQUE</td><td style="text-align:center">Yes</td><td style="text-align:center">No</td><td style="text-align:center">Yes</td><td style="text-align:center">Many</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">NOT NULL</td><td style="text-align:center">No</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes</td><td style="text-align:center">Many</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">CHECK</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes</td><td style="text-align:center">Many</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">DEFAULT</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes</td><td style="text-align:center">No</td><td style="text-align:center">Many</td></tr>
+            <tr><td style="padding:9px 14px;font-weight:bold;">INDEX</td><td style="text-align:center">Yes</td><td style="text-align:center">Yes*</td><td style="text-align:center">No</td><td style="text-align:center">Many</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.84rem;color:var(--muted);margin-top:10px;font-family:'Courier New',monospace;">* FOREIGN KEY allows NULL unless combined with NOT NULL. UNIQUE INDEX does not allow duplicates.</p>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  © 2026<span id="year"></span> All rights reserved to Lakshmana Sai
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+<script>
+  const sections = document.querySelectorAll('.section[id]');
+  const navLinks = document.querySelectorAll('#toc a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
