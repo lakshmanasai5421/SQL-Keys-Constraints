@@ -398,5 +398,5 @@ DROP INDEX idx_orders_customer;
 - **INDEX** — Not a constraint but critical for performance. Add to frequently queried columns.
 
 ---
-
+for web access :-https://lakshmanasai5421.github.io/SQL-Keys-Constraints/
 *SQL Keys & Constraints Reference Guide · Based on standard SQL (ANSI)*
