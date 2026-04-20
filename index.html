@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SQL Keys & Constraints — A Complete Guide</title>
+  <title>SQL Keys and Constraints: A Complete Guide</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -154,24 +154,44 @@
     .intro-box p:last-child { margin-bottom: 0; }
 
     /* ── TYPES GRID ── */
+    .category-block { margin-bottom: 32px; }
+    .category-label {
+      font-family: 'Courier New', monospace;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-weight: bold;
+      padding: 5px 12px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .cat-keys   { background: #d4edda; color: #155724; }
+    .cat-integ  { background: #cfe2ff; color: #084298; }
+    .cat-value  { background: #fff3cd; color: #7a4a00; }
+    .cat-perf   { background: #fce5cd; color: #7a3c00; }
+
     .types-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 56px;
+      gap: 12px;
+      margin-bottom: 0;
     }
+    .types-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+    .types-grid.one-col { grid-template-columns: 1fr; }
+
     .type-card {
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 18px 16px;
+      padding: 16px 15px;
       background: #fff;
       cursor: pointer;
       transition: box-shadow .2s, transform .2s;
     }
     .type-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
-    .type-card .tc-icon { font-size: 1.6rem; margin-bottom: 8px; }
-    .type-card .tc-name { font-size: .93rem; font-weight: bold; font-family: Georgia, serif; margin-bottom: 4px; }
-    .type-card .tc-desc { font-size: .8rem; color: var(--muted); font-family: 'Courier New', monospace; line-height: 1.5; }
+    .type-card .tc-icon { font-size: 1.5rem; margin-bottom: 7px; }
+    .type-card .tc-name { font-size: .92rem; font-weight: bold; font-family: Georgia, serif; margin-bottom: 4px; }
+    .type-card .tc-desc { font-size: .79rem; color: var(--muted); font-family: 'Courier New', monospace; line-height: 1.5; }
 
     /* ── SECTION ── */
     .section { margin-bottom: 68px; padding-top: 8px; }
@@ -364,7 +384,7 @@
 <header>
   <div class="breadcrumb">Database Concepts › SQL › Keys &amp; Constraints</div>
   <h1>SQL <span>Keys &amp; Constraints</span></h1>
-  <p class="subtitle">The rules that keep your data honest — explained step by step with examples, violations, and real syntax.</p>
+  <p class="subtitle">The rules that keep your data honest, explained step by step with examples, violations, and real syntax.</p>
 </header>
 
 <div class="page-wrap">
@@ -389,11 +409,11 @@
     <!-- INTRO -->
     <section class="section" id="intro">
       <div class="intro-box">
-        <p>In SQL, <strong>keys</strong> identify rows uniquely and link tables together. <strong>Constraints</strong> are rules that enforce the integrity of your data — they prevent invalid, duplicate, or missing values from ever entering the database.</p>
+        <p>In SQL, <strong>keys</strong> identify rows uniquely and link tables together. <strong>Constraints</strong> are rules that enforce the integrity of your data. They prevent invalid, duplicate, or missing values from ever entering the database.</p>
         <p>Together, keys and constraints are the backbone of a well-structured relational database. Without them, data becomes inconsistent, unreliable, and hard to query correctly.</p>
       </div>
       <div class="callout">
-        <strong>Why this matters:</strong> A database without constraints is like a spreadsheet with no validation. Anyone can enter duplicate IDs, blank required fields, or references to rows that don't exist. Constraints make the database itself enforce correctness — not just your application code.
+        <strong>Why this matters:</strong> A database without constraints is like a spreadsheet with no validation. Anyone can enter duplicate IDs, blank required fields, or references to rows that do not exist. Constraints make the database itself enforce correctness, not just your application code.
       </div>
     </section>
 
@@ -403,43 +423,76 @@
         <span class="section-num">00</span>
         <h2>Types of Keys &amp; Constraints</h2>
       </div>
-      <div class="types-grid">
-        <div class="type-card" onclick="document.getElementById('pk').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">🔑</div>
-          <div class="tc-name">PRIMARY KEY</div>
-          <div class="tc-desc">Uniquely identifies each row</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('fk').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">🔗</div>
-          <div class="tc-name">FOREIGN KEY</div>
-          <div class="tc-desc">Links rows across tables</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('uq').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">✨</div>
-          <div class="tc-name">UNIQUE</div>
-          <div class="tc-desc">No duplicate values allowed</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('nn').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">🚫</div>
-          <div class="tc-name">NOT NULL</div>
-          <div class="tc-desc">Value must always be provided</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('ck').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">✅</div>
-          <div class="tc-name">CHECK</div>
-          <div class="tc-desc">Value must pass a condition</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('df').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">📋</div>
-          <div class="tc-name">DEFAULT</div>
-          <div class="tc-desc">Fills in a value automatically</div>
-        </div>
-        <div class="type-card" onclick="document.getElementById('idx').scrollIntoView({behavior:'smooth'})">
-          <div class="tc-icon">⚡</div>
-          <div class="tc-name">INDEX</div>
-          <div class="tc-desc">Speeds up search queries</div>
+
+      <p style="margin-bottom:28px;">SQL organises keys and constraints into four categories based on what they protect or provide. Each category has a distinct purpose in keeping your database reliable.</p>
+
+      <!-- CATEGORY 1: Keys -->
+      <div class="category-block">
+        <span class="category-label cat-keys">🔑 Keys — Row Identity</span>
+        <p style="font-size:.93rem;color:var(--muted);margin-bottom:12px;font-family:'Courier New',monospace;">Identify individual rows and establish relationships between tables.</p>
+        <div class="types-grid two-col">
+          <div class="type-card" onclick="document.getElementById('pk').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">🔑</div>
+            <div class="tc-name">PRIMARY KEY</div>
+            <div class="tc-desc">Uniquely identifies every row in a table. Cannot be NULL or duplicated. Each table has exactly one.</div>
+          </div>
+          <div class="type-card" onclick="document.getElementById('fk').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">🔗</div>
+            <div class="tc-name">FOREIGN KEY</div>
+            <div class="tc-desc">References a primary key in another table. Enforces that relationships always point to real rows.</div>
+          </div>
         </div>
       </div>
+
+      <!-- CATEGORY 2: Integrity Constraints -->
+      <div class="category-block">
+        <span class="category-label cat-integ">🛡️ Integrity Constraints — Data Uniqueness</span>
+        <p style="font-size:.93rem;color:var(--muted);margin-bottom:12px;font-family:'Courier New',monospace;">Prevent duplicate or ambiguous data from entering the database.</p>
+        <div class="types-grid one-col">
+          <div class="type-card" onclick="document.getElementById('uq').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">✨</div>
+            <div class="tc-name">UNIQUE</div>
+            <div class="tc-desc">Ensures no two rows share the same value in a column. Unlike PRIMARY KEY, it does allow NULL values. Useful for emails, usernames and phone numbers.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY 3: Value Constraints -->
+      <div class="category-block">
+        <span class="category-label cat-value">📋 Value Constraints — Column Rules</span>
+        <p style="font-size:.93rem;color:var(--muted);margin-bottom:12px;font-family:'Courier New',monospace;">Control what values are allowed or automatically assigned to a column.</p>
+        <div class="types-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="type-card" onclick="document.getElementById('nn').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">🚫</div>
+            <div class="tc-name">NOT NULL</div>
+            <div class="tc-desc">Requires a value to always be present. Blocks empty entries for mandatory fields like names and prices.</div>
+          </div>
+          <div class="type-card" onclick="document.getElementById('ck').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">✅</div>
+            <div class="tc-name">CHECK</div>
+            <div class="tc-desc">Validates a value against a custom condition before it is stored. Rejects the row if the condition is false.</div>
+          </div>
+          <div class="type-card" onclick="document.getElementById('df').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">📋</div>
+            <div class="tc-name">DEFAULT</div>
+            <div class="tc-desc">Automatically fills in a preset value when no value is provided during INSERT. Does not reject data.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY 4: Performance -->
+      <div class="category-block" style="margin-bottom:48px;">
+        <span class="category-label cat-perf">⚡ Performance — Query Speed</span>
+        <p style="font-size:.93rem;color:var(--muted);margin-bottom:12px;font-family:'Courier New',monospace;">Not a data rule, but a structure that makes finding data faster.</p>
+        <div class="types-grid one-col">
+          <div class="type-card" onclick="document.getElementById('idx').scrollIntoView({behavior:'smooth'})">
+            <div class="tc-icon">⚡</div>
+            <div class="tc-name">INDEX</div>
+            <div class="tc-desc">Builds a sorted lookup structure on a column so the database can find rows instantly instead of scanning the entire table. Automatically created for PRIMARY KEY and UNIQUE columns.</div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <hr class="fancy"/>
@@ -469,15 +522,15 @@
     <span class="cn">PRIMARY KEY</span> (student_id, course_id)
 );</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>You declare one column (or a combination) as the PRIMARY KEY.</p></div>
         <div class="step"><div class="step-n">2</div><p>On every INSERT or UPDATE, the database checks: is this value already used? Is it NULL?</p></div>
-        <div class="step"><div class="step-n">3</div><p>If either check fails → the operation is rejected with an error.</p></div>
-        <div class="step"><div class="step-n">4</div><p>If both pass → the row is accepted and stored.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If either check fails, the operation is rejected with an error.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If both checks pass, the row is accepted and stored.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on the students table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the students table</h3>
       <div class="tables-row">
         <div class="tbl-wrap">
           <div class="tbl-label">Existing Data</div>
@@ -489,31 +542,31 @@
         </div>
       </div>
       <div class="trace-block">
-        <div class="trace-title">New INSERT attempts — Primary Key: student_id</div>
+        <div class="trace-title">New INSERT attempts | Primary Key: student_id</div>
         <div class="trace-row pass">
           <span class="tr-val tr-pk">id=3</span>
           <span class="tr-arrow">→</span>
           <span>INSERT student_id = 3</span>
-          <span class="tr-result">✅ Unique &amp; not null → ACCEPTED</span>
+          <span class="tr-result">✅ Unique and not null: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">id=1</span>
           <span class="tr-arrow">→</span>
           <span>INSERT student_id = 1</span>
-          <span class="tr-result">❌ Duplicate value → REJECTED</span>
+          <span class="tr-result">❌ Duplicate value: REJECTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-null">NULL</span>
           <span class="tr-arrow">→</span>
           <span>INSERT student_id = NULL</span>
-          <span class="tr-result">❌ NULL not allowed → REJECTED</span>
+          <span class="tr-result">❌ NULL not allowed: REJECTED</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
-        <code>student_id = 3</code> is brand new and not NULL → inserted successfully.<br>
-        <code>student_id = 1</code> already exists → database rejects it with a <em>duplicate key</em> error.<br>
-        <code>student_id = NULL</code> violates the not-null rule → rejected immediately.<br>
+        <code>student_id = 3</code> is brand new and not NULL, so it is inserted successfully.<br>
+        <code>student_id = 1</code> already exists, so the database rejects it with a <em>duplicate key</em> error.<br>
+        <code>student_id = NULL</code> violates the not-null rule and is rejected immediately.<br>
         This guarantees every row has a unique, stable identity you can always refer to.
       </div>
       <div class="error-box">
@@ -531,7 +584,7 @@
         <span class="badge" style="background:var(--tag-fk);color:#084298">Referential Integrity</span>
       </div>
       <p class="lead">A FOREIGN KEY <strong>links a column in one table to the PRIMARY KEY of another</strong>. It ensures you can't reference a row that doesn't exist.</p>
-      <p>Foreign keys enforce <em>referential integrity</em> — the guarantee that every relationship in your database points to something real. You can't add an order for a customer who doesn't exist, and you can't delete a customer who still has orders (unless you use CASCADE).</p>
+      <p>Foreign keys enforce <em>referential integrity</em>: the guarantee that every relationship in your database points to something real. You cannot add an order for a customer who does not exist, and you cannot delete a customer who still has orders (unless you use CASCADE).</p>
 
       <pre><span class="kw">CREATE TABLE</span> orders (
     order_id    <span class="kw">INT</span>  <span class="cn">PRIMARY KEY</span>,
@@ -546,15 +599,15 @@
     <span class="kw">ON DELETE CASCADE</span>    <span class="cm">-- delete orders when customer is deleted</span>
     <span class="kw">ON UPDATE CASCADE</span>;   <span class="cm">-- update orders if customer_id changes</span></pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>You declare a column as a FOREIGN KEY referencing another table's primary key.</p></div>
         <div class="step"><div class="step-n">2</div><p>On every INSERT or UPDATE in the child table, the database checks: does this value exist in the parent table?</p></div>
-        <div class="step"><div class="step-n">3</div><p>If the value doesn't exist in the parent → the operation is rejected.</p></div>
-        <div class="step"><div class="step-n">4</div><p>On DELETE/UPDATE of the parent row, the ON DELETE/ON UPDATE rule determines what happens to children.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the value does not exist in the parent, the operation is rejected.</p></div>
+        <div class="step"><div class="step-n">4</div><p>On DELETE or UPDATE of the parent row, the ON DELETE or ON UPDATE rule determines what happens to children.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on orders table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the orders table</h3>
       <div class="tables-row">
         <div class="tbl-wrap">
           <div class="tbl-label">customers (parent)</div>
@@ -573,31 +626,31 @@
         </div>
       </div>
       <div class="trace-block">
-        <div class="trace-title">New INSERT attempts into orders — FK: customer_id → customers(customer_id)</div>
+        <div class="trace-title">New INSERT attempts into orders | FK: customer_id references customers(customer_id)</div>
         <div class="trace-row pass">
           <span class="tr-val tr-fk">cid=102</span>
           <span class="tr-arrow">→</span>
           <span>INSERT order with customer_id = 102</span>
-          <span class="tr-result">✅ Exists in customers → ACCEPTED</span>
+          <span class="tr-result">✅ Exists in customers: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">cid=999</span>
           <span class="tr-arrow">→</span>
           <span>INSERT order with customer_id = 999</span>
-          <span class="tr-result">❌ Not in customers → REJECTED</span>
+          <span class="tr-result">❌ Not in customers: REJECTED</span>
         </div>
         <div class="trace-row warn">
           <span class="tr-val tr-null">NULL</span>
           <span class="tr-arrow">→</span>
           <span>INSERT order with customer_id = NULL</span>
-          <span class="tr-result">⚠️ Allowed (unless NOT NULL also set)</span>
+          <span class="tr-result">⚠️ Allowed unless NOT NULL is also set</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
         <code>customer_id = 102</code> exists in the customers table → order inserted successfully.<br>
         <code>customer_id = 999</code> has no matching row in customers → database rejects it. This prevents "orphan" orders that point to nobody.<br>
-        NULL is allowed by default unless you also add NOT NULL — it means "order with no customer assigned yet".
+        NULL is allowed by default unless you also add NOT NULL. It means "order with no customer assigned yet".
       </div>
 
       <h3 class="sub-h3">CASCADE options explained</h3>
@@ -618,7 +671,7 @@
         <span class="badge" style="background:var(--tag-uq);color:#432874">No Duplicates</span>
       </div>
       <p class="lead">A UNIQUE constraint ensures <strong>no two rows have the same value</strong> in the specified column(s). Unlike PRIMARY KEY, a UNIQUE column can hold NULL.</p>
-      <p>Use UNIQUE for columns that are natural identifiers but not the primary key — like email addresses, usernames, or phone numbers. A table can have multiple UNIQUE constraints but only one PRIMARY KEY.</p>
+      <p>Use UNIQUE for columns that are natural identifiers but not the primary key, such as email addresses, usernames, or phone numbers. A table can have multiple UNIQUE constraints but only one PRIMARY KEY.</p>
 
       <pre><span class="kw">CREATE TABLE</span> users (
     user_id  <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
@@ -629,15 +682,15 @@
     <span class="cn">UNIQUE</span> (phone)
 );</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>On INSERT or UPDATE, the database scans existing values in the UNIQUE column.</p></div>
-        <div class="step"><div class="step-n">2</div><p>If the new value already exists → operation is rejected.</p></div>
-        <div class="step"><div class="step-n">3</div><p>If the value is NULL → it passes (most databases allow multiple NULLs in a UNIQUE column).</p></div>
-        <div class="step"><div class="step-n">4</div><p>If the value is brand new → row is inserted/updated successfully.</p></div>
+        <div class="step"><div class="step-n">2</div><p>If the new value already exists, the operation is rejected.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the value is NULL, it passes (most databases allow multiple NULLs in a UNIQUE column).</p></div>
+        <div class="step"><div class="step-n">4</div><p>If the value is brand new, the row is inserted or updated successfully.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on users table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the users table</h3>
       <div class="tables-row">
         <div class="tbl-wrap">
           <div class="tbl-label">Existing Data</div>
@@ -649,36 +702,36 @@
         </div>
       </div>
       <div class="trace-block">
-        <div class="trace-title">New INSERT attempts — UNIQUE constraints on email and username</div>
+        <div class="trace-title">New INSERT attempts | UNIQUE constraints on email and username</div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">email</span>
           <span class="tr-arrow">→</span>
           <span>carol@x.com (new email)</span>
-          <span class="tr-result">✅ Not duplicate → ACCEPTED</span>
+          <span class="tr-result">✅ Not a duplicate: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">email</span>
           <span class="tr-arrow">→</span>
           <span>alice@x.com (already exists)</span>
-          <span class="tr-result">❌ Duplicate → REJECTED</span>
+          <span class="tr-result">❌ Duplicate: REJECTED</span>
         </div>
         <div class="trace-row pass">
           <span class="tr-val tr-null">NULL</span>
           <span class="tr-arrow">→</span>
           <span>email = NULL</span>
-          <span class="tr-result">✅ NULL allowed in UNIQUE → ACCEPTED</span>
+          <span class="tr-result">✅ NULL allowed in UNIQUE: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">user</span>
           <span class="tr-arrow">→</span>
           <span>username = "alice" (already exists)</span>
-          <span class="tr-result">❌ Duplicate username → REJECTED</span>
+          <span class="tr-result">❌ Duplicate username: REJECTED</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
         New unique values pass freely. Duplicate non-null values are always rejected.<br>
-        NULL is a special case — it represents "unknown", so most databases treat multiple NULLs as <em>not equal</em> to each other, allowing several rows to have NULL in a UNIQUE column.<br>
+        NULL is a special case. It represents "unknown", so most databases treat multiple NULLs as <em>not equal</em> to each other, allowing several rows to have NULL in a UNIQUE column.<br>
         <strong>Difference from PRIMARY KEY:</strong> UNIQUE allows NULL; PRIMARY KEY does not. A table can have many UNIQUE constraints, but only one PRIMARY KEY.
       </div>
     </section>
@@ -690,7 +743,7 @@
         <h2>NOT NULL</h2>
         <span class="badge" style="background:var(--tag-nn);color:#7a4a00">Value Required</span>
       </div>
-      <p class="lead">NOT NULL ensures a column <strong>always has a value</strong> — it can never be left empty (NULL). It is the simplest and most common constraint.</p>
+      <p class="lead">NOT NULL ensures a column <strong>always has a value</strong>. It can never be left empty (NULL). It is the simplest and most common constraint.</p>
       <p>By default, every column in SQL accepts NULL unless you explicitly add NOT NULL. Use it for fields that must always be present: names, dates, status codes, prices, and so on.</p>
 
       <pre><span class="kw">CREATE TABLE</span> products (
@@ -700,44 +753,44 @@
     description  <span class="kw">TEXT</span>                        <span class="cm">-- nullable (optional)</span>
 );</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>When a row is inserted or updated, the database checks every NOT NULL column.</p></div>
-        <div class="step"><div class="step-n">2</div><p>If a NOT NULL column has no value supplied (or explicitly NULL) → rejected immediately.</p></div>
-        <div class="step"><div class="step-n">3</div><p>If all NOT NULL columns have values → row proceeds to other constraint checks.</p></div>
+        <div class="step"><div class="step-n">2</div><p>If a NOT NULL column has no value supplied (or is explicitly NULL), it is rejected immediately.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If all NOT NULL columns have values, the row proceeds to other constraint checks.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on products table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the products table</h3>
       <div class="trace-block">
         <div class="trace-title">NOT NULL columns: product_name, price</div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">✓</span>
           <span>INSERT (1, "Laptop", 999.99, "Fast laptop")</span>
-          <span class="tr-result">✅ All NOT NULL fields present → ACCEPTED</span>
+          <span class="tr-result">✅ All NOT NULL fields present: ACCEPTED</span>
         </div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">✓</span>
           <span>INSERT (2, "Mouse", 29.99, NULL)</span>
-          <span class="tr-result">✅ description is nullable → ACCEPTED</span>
+          <span class="tr-result">✅ description is nullable: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">✗</span>
           <span>INSERT (3, NULL, 49.99, "Keyboard")</span>
-          <span class="tr-result">❌ product_name is NULL → REJECTED</span>
+          <span class="tr-result">❌ product_name is NULL: REJECTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">✗</span>
           <span>INSERT (4, "Monitor", NULL, NULL)</span>
-          <span class="tr-result">❌ price is NULL → REJECTED</span>
+          <span class="tr-result">❌ price is NULL: REJECTED</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
-        Row 1: every required field has a value → accepted.<br>
-        Row 2: <code>description</code> is NULL but it's nullable (no NOT NULL constraint) → fine.<br>
-        Row 3: <code>product_name</code> was not provided → rejected. A product with no name makes no sense.<br>
-        Row 4: <code>price</code> is NULL → rejected. A product must always have a price.<br>
-        The <code>description</code> column has no NOT NULL, so it's optional — perfectly valid to leave it blank.
+        Row 1: every required field has a value, so it is accepted.<br>
+        Row 2: <code>description</code> is NULL but it has no NOT NULL constraint, so NULL is perfectly fine here.<br>
+        Row 3: <code>product_name</code> was not provided. A product with no name makes no sense, so it is rejected.<br>
+        Row 4: <code>price</code> is NULL. A product must always have a price, so it is rejected.<br>
+        The <code>description</code> column is intentionally optional and valid to leave blank.
       </div>
     </section>
 
@@ -749,7 +802,7 @@
         <span class="badge" style="background:var(--tag-ck);color:#842029">Custom Condition</span>
       </div>
       <p class="lead">A CHECK constraint lets you define a <strong>custom rule that every row must satisfy</strong>. If the condition evaluates to false, the row is rejected.</p>
-      <p>CHECK is the most flexible constraint — you can write any valid SQL expression. Common uses: ensuring age is positive, salary is above minimum, or status is one of a fixed set of values.</p>
+      <p>CHECK is the most flexible constraint. You can write any valid SQL expression. Common uses include ensuring age is within range, salary is above minimum, or status is one of a fixed set of values.</p>
 
       <pre><span class="kw">CREATE TABLE</span> employees (
     emp_id   <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
@@ -759,54 +812,54 @@
     status   <span class="kw">VARCHAR</span>(<span class="nm">20</span>)  <span class="cn">CHECK</span> (status <span class="kw">IN</span> (<span class="st">'active'</span>, <span class="st">'inactive'</span>, <span class="st">'on_leave'</span>))
 );</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>On INSERT or UPDATE, the database evaluates the CHECK expression with the new column value.</p></div>
-        <div class="step"><div class="step-n">2</div><p>If the expression returns TRUE → row is accepted (passes this constraint).</p></div>
-        <div class="step"><div class="step-n">3</div><p>If the expression returns FALSE → row is rejected with an error.</p></div>
-        <div class="step"><div class="step-n">4</div><p>If the expression returns NULL (e.g., column is NULL) → row is accepted (NULL is not FALSE).</p></div>
+        <div class="step"><div class="step-n">2</div><p>If the expression returns TRUE, the row is accepted and passes this constraint.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the expression returns FALSE, the row is rejected with an error.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If the expression returns NULL (for example when the column is NULL), the row is accepted because NULL is not the same as FALSE.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on employees table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the employees table</h3>
       <div class="trace-block">
         <div class="trace-title">CHECK constraints: age (18–65), salary (&gt;0), status (active/inactive/on_leave)</div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">✓</span>
           <span>age=30, salary=50000, status='active'</span>
-          <span class="tr-result">✅ All checks pass → ACCEPTED</span>
+          <span class="tr-result">✅ All checks pass: ACCEPTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">age</span>
           <span class="tr-arrow">→</span>
           <span>age = 15 (fails age &gt;= 18)</span>
-          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+          <span class="tr-result">❌ CHECK violated: REJECTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">salary</span>
           <span class="tr-arrow">→</span>
           <span>salary = -500 (fails salary &gt; 0)</span>
-          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+          <span class="tr-result">❌ CHECK violated: REJECTED</span>
         </div>
         <div class="trace-row fail">
           <span class="tr-val tr-bad">status</span>
           <span class="tr-arrow">→</span>
           <span>status = 'fired' (not in allowed list)</span>
-          <span class="tr-result">❌ CHECK violated → REJECTED</span>
+          <span class="tr-result">❌ CHECK violated: REJECTED</span>
         </div>
         <div class="trace-row warn">
           <span class="tr-val tr-null">NULL</span>
           <span class="tr-arrow">→</span>
           <span>age = NULL</span>
-          <span class="tr-result">⚠️ NULL skips CHECK (not FALSE) → ACCEPTED</span>
+          <span class="tr-result">⚠️ NULL skips CHECK (not FALSE): ACCEPTED</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
-        Row 1: all three conditions evaluate TRUE → inserted.<br>
-        <code>age = 15</code>: the expression <code>15 &gt;= 18</code> is FALSE → rejected.<br>
-        <code>salary = -500</code>: the expression <code>-500 &gt; 0</code> is FALSE → rejected.<br>
-        <code>status = 'fired'</code>: not in the IN list → FALSE → rejected.<br>
-        <strong>NULL edge case:</strong> When the column is NULL, CHECK evaluates to NULL (not FALSE), so the row passes. To also block NULLs, combine CHECK with NOT NULL.
+        Row 1: all three conditions evaluate to TRUE, so it is inserted.<br>
+        <code>age = 15</code>: the expression <code>15 &gt;= 18</code> is FALSE, so it is rejected.<br>
+        <code>salary = -500</code>: the expression <code>-500 &gt; 0</code> is FALSE, so it is rejected.<br>
+        <code>status = 'fired'</code>: not in the IN list, so it evaluates to FALSE and is rejected.<br>
+        <strong>NULL edge case:</strong> when the column is NULL, CHECK evaluates to NULL rather than FALSE, so the row passes. To also block NULLs, combine CHECK with NOT NULL.
       </div>
     </section>
 
@@ -817,8 +870,8 @@
         <h2>DEFAULT</h2>
         <span class="badge" style="background:var(--tag-df);color:#0a5c45">Auto-fill Value</span>
       </div>
-      <p class="lead">DEFAULT <strong>automatically fills in a value</strong> when no value is provided during INSERT. It doesn't restrict — it helps.</p>
-      <p>DEFAULT is the only constraint that adds data rather than rejecting it. It's great for timestamps (created_at), boolean flags (is_active), counters, or any field with a sensible starting value.</p>
+      <p class="lead">DEFAULT <strong>automatically fills in a value</strong> when no value is provided during INSERT. It does not restrict data, it supplies it.</p>
+      <p>DEFAULT is the only constraint that adds data rather than rejecting it. It is useful for timestamps (created_at), boolean flags (is_active), counters, or any field with a sensible starting value.</p>
 
       <pre><span class="kw">CREATE TABLE</span> orders (
     order_id    <span class="kw">INT</span>          <span class="cn">PRIMARY KEY</span>,
@@ -829,31 +882,31 @@
     is_paid     <span class="kw">BOOLEAN</span>      <span class="cn">DEFAULT</span> <span class="kw">FALSE</span>
 );</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>On INSERT, the database checks each DEFAULT column: was a value provided?</p></div>
-        <div class="step"><div class="step-n">2</div><p>If yes → use the provided value.</p></div>
-        <div class="step"><div class="step-n">3</div><p>If no (column omitted from INSERT) → substitute the DEFAULT value automatically.</p></div>
-        <div class="step"><div class="step-n">4</div><p>If NULL is explicitly inserted → NULL is used (overrides DEFAULT).</p></div>
+        <div class="step"><div class="step-n">2</div><p>If yes, the provided value is used as-is.</p></div>
+        <div class="step"><div class="step-n">3</div><p>If the column was omitted from the INSERT statement, the DEFAULT value is substituted automatically.</p></div>
+        <div class="step"><div class="step-n">4</div><p>If NULL is explicitly inserted, NULL is used and the DEFAULT is not applied.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — INSERT attempts on orders table</h3>
+      <h3 class="sub-h3">Worked Trace: INSERT attempts on the orders table</h3>
       <div class="trace-block">
         <div class="trace-title">DEFAULT columns: status='pending', quantity=1, is_paid=FALSE</div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">full</span>
           <span>INSERT (1, 101, 'shipped', NOW(), 3, TRUE)</span>
-          <span class="tr-result">✅ All values provided → used as-is</span>
+          <span class="tr-result">✅ All values provided: used as-is</span>
         </div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">part</span>
-          <span>INSERT (2, 101) — omit status, qty, is_paid</span>
+          <span>INSERT (2, 101) — status, qty, is_paid omitted</span>
           <span class="tr-result">✅ Defaults fill in: 'pending', 1, FALSE</span>
         </div>
         <div class="trace-row warn">
           <span class="tr-val tr-null">NULL</span>
           <span>INSERT (3, 101, NULL, ...)</span>
-          <span class="tr-result">⚠️ Explicit NULL overrides DEFAULT → status = NULL</span>
+          <span class="tr-result">⚠️ Explicit NULL overrides DEFAULT: status stored as NULL</span>
         </div>
       </div>
       <div class="tables-row">
@@ -869,9 +922,9 @@
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
-        Row 1: all values given explicitly → nothing substituted.<br>
-        Row 2: only <code>order_id</code> and <code>customer_id</code> provided → <code>status</code>, <code>quantity</code>, <code>is_paid</code> are auto-filled from DEFAULT.<br>
-        Row 3: <code>status = NULL</code> was explicitly written → DEFAULT is <em>not</em> applied. NULL overrides DEFAULT. To prevent this, also add NOT NULL to the column.
+        Row 1: all values were given explicitly, so nothing is substituted.<br>
+        Row 2: only <code>order_id</code> and <code>customer_id</code> were provided. The database auto-filled <code>status</code>, <code>quantity</code>, and <code>is_paid</code> from their DEFAULT values.<br>
+        Row 3: <code>status = NULL</code> was explicitly written. DEFAULT is not applied when NULL is given directly. To prevent this, also add NOT NULL to the column.
       </div>
     </section>
 
@@ -882,8 +935,8 @@
         <h2>INDEX</h2>
         <span class="badge" style="background:var(--tag-idx);color:#7a3c00">Performance Booster</span>
       </div>
-      <p class="lead">An INDEX is a <strong>lookup structure that speeds up queries</strong> on a column. It doesn't restrict data — it makes finding it faster.</p>
-      <p>Without an index, the database must scan every row (a <em>full table scan</em>) to find matching values. An index works like a book's index — you jump straight to the right page instead of reading every page. The trade-off: indexes use storage and slow down INSERT/UPDATE slightly.</p>
+      <p class="lead">An INDEX is a <strong>lookup structure that speeds up queries</strong> on a column. It does not restrict data; it makes finding it faster.</p>
+      <p>Without an index, the database must scan every row (a <em>full table scan</em>) to find matching values. An index works like a book's index: you jump straight to the right page instead of reading every page. The trade-off is that indexes use extra storage and slow down INSERT and UPDATE operations slightly.</p>
 
       <pre><span class="cm">-- Create a regular index</span>
 <span class="kw">CREATE INDEX</span> idx_orders_customer
@@ -900,32 +953,32 @@
 <span class="cm">-- Drop an index</span>
 <span class="kw">DROP INDEX</span> idx_orders_customer;</pre>
 
-      <h3 class="sub-h3">How it works — step by step</h3>
+      <h3 class="sub-h3">How it works: step by step</h3>
       <div class="steps">
         <div class="step"><div class="step-n">1</div><p>When you create an index, the database builds a sorted B-tree structure of the column's values, each pointing to the actual row location.</p></div>
         <div class="step"><div class="step-n">2</div><p>When a query filters or sorts by that column, the database uses the index to locate matching rows instantly instead of scanning the whole table.</p></div>
-        <div class="step"><div class="step-n">3</div><p>On INSERT/UPDATE/DELETE, the index is automatically updated to stay in sync.</p></div>
+        <div class="step"><div class="step-n">3</div><p>On INSERT, UPDATE, or DELETE, the index is automatically updated to stay in sync.</p></div>
       </div>
 
-      <h3 class="sub-h3">Worked Trace — query performance with vs without index</h3>
+      <h3 class="sub-h3">Worked Trace: query performance with and without an index</h3>
       <div class="trace-block">
-        <div class="trace-title">Table: orders (1,000,000 rows) — query: WHERE customer_id = 102</div>
+        <div class="trace-title">Table: orders (1,000,000 rows) | Query: WHERE customer_id = 102</div>
         <div class="trace-row fail" style="background:#fff0f022">
           <span class="tr-val tr-bad">slow</span>
-          <span><strong>Without index</strong> — full table scan</span>
-          <span class="tr-result">Reads all 1,000,000 rows → ~800ms</span>
+          <span><strong>Without index</strong>: full table scan</span>
+          <span class="tr-result">Reads all 1,000,000 rows — approx 800ms</span>
         </div>
         <div class="trace-row pass">
           <span class="tr-val tr-ok">fast</span>
-          <span><strong>With index</strong> on customer_id — B-tree lookup</span>
-          <span class="tr-result">Reads ~20 rows directly → ~1ms</span>
+          <span><strong>With index</strong> on customer_id: B-tree lookup</span>
+          <span class="tr-result">Reads approx 20 rows directly — approx 1ms</span>
         </div>
       </div>
       <div class="insight-box">
         <div class="insight-title">📖 What this means</div>
-        Without an index, finding all orders for <code>customer_id = 102</code> requires checking every single row. With an index, the database jumps directly to the matching rows using a sorted B-tree structure.<br><br>
+        Without an index, finding all orders for <code>customer_id = 102</code> requires checking every single row. With an index, the database jumps directly to the matching rows using the sorted B-tree structure.<br><br>
         <strong>When to add an index:</strong> columns used frequently in WHERE, JOIN ON, or ORDER BY clauses.<br>
-        <strong>When NOT to:</strong> small tables (full scan is fast anyway), columns with very few distinct values, or tables with very frequent INSERT/UPDATE (index maintenance overhead).
+        <strong>When not to add one:</strong> small tables where a full scan is already fast, columns with very few distinct values, or tables with very frequent INSERT and UPDATE operations where index maintenance adds overhead.
       </div>
 
       <div class="callout">
@@ -938,7 +991,7 @@
     <!-- SUMMARY -->
     <section class="section" id="summary">
       <div class="section-header">
-        <span class="section-num">—</span>
+        <span class="section-num">08</span>
         <h2>Quick Reference Summary</h2>
       </div>
       <p>All seven keys &amp; constraints at a glance:</p>
@@ -971,11 +1024,8 @@
 </div>
 
 <footer>
-  © <span id="year"></span> All rights reserved to Lakshmana Sai
+  <p>SQL Keys &amp; Constraints Reference &nbsp;·&nbsp; <strong>For learning purposes</strong> &nbsp;·&nbsp; Based on standard SQL (ANSI)</p>
 </footer>
-<script>
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>
 
 <script>
   const sections = document.querySelectorAll('.section[id]');
